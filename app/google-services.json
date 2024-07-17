@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134971848845",
+    "project_id": "controle-material",
+    "storage_bucket": "controle-material.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134971848845:android:ecb35535cb409ea2938ac4",
+        "android_client_info": {
+          "package_name": "com.iae.controle_material"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZBEnApDuY4jag8XztWyAQQlaa3bG-htE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
