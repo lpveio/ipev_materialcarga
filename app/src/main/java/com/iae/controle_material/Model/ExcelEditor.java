@@ -116,7 +116,6 @@ public class ExcelEditor {
         try {
             String nome_file = itens.get(0).getSetor() + "_" + itens.get(0).getPredio() + "_" + itens.get(0).getSala();
 
-            Log.d("export", "path:" + nome_file);
             InputStream in = context.getAssets().open("xls/template.xlsx");
 
 
@@ -192,8 +191,6 @@ public class ExcelEditor {
             String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
             FileOutputStream outputStream = new FileOutputStream(new File(path, nome_file +".xlsx"));
 
-            Log.d("export", "path:" + path);
-            Log.d("export", "path:" + outputStream);
             workbook.write(outputStream);
             outputStream.close();
 
