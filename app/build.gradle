@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.iae.controle_material'
+    namespace 'com.ipev.controle_material'
     compileSdk 34
 
     packagingOptions {
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.iae.controle_material"
+        applicationId "com.ipev.controle_material"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -36,13 +36,11 @@ android {
     }
 
 
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 
 
 

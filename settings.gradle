@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Controle_Material"
+rootProject.name = "Carga IPEV"
 include ':app'
