@@ -39,6 +39,8 @@ public class realizar_inventario extends AppCompatActivity {
 
     String txt_sala , txt_predio , txt_setor;
 
+
+
     DatabaseReference database;
 
     ProgressBar loading;
@@ -53,7 +55,7 @@ public class realizar_inventario extends AppCompatActivity {
 
     ArrayList<ItensModel> filteredSetorList;
 
-
+    Button buttonFinaliza;
 
     ArrayList<ItensModel> filteredPredioList;
 
@@ -67,7 +69,7 @@ public class realizar_inventario extends AppCompatActivity {
 
     ArrayList<String> PrediosList, SetorList, SalaList;
 
-    String[] setores= {"TODOS", "APR-P" ,"APR-PPP", "APR-PSC", "LAAI" ,"LAAQ", "LAII", "LAME","LAPM", "LAPR", "LAPT", "LASI" ,"OUTRO", "?"};
+    String[] setores = getResources().getStringArray(R.array.setores);
 
     public int tipo;
 
@@ -84,6 +86,8 @@ public class realizar_inventario extends AppCompatActivity {
         auto_setor = findViewById(R.id.auto_complete_3_setor);
         auto_setor.setText("TODOS");
         loading = findViewById(R.id.progress_busca_local);
+        buttonFinaliza = findViewById(R.id.button_finaliza);
+
 
         Intent intent = getIntent();
         if(intent != null) {
@@ -237,6 +241,7 @@ public class realizar_inventario extends AppCompatActivity {
                 String item = adapterView.getItemAtPosition(i).toString();
                 txt_sala = item;
                 filterSalaList(item);
+                buttonFinaliza.setEnabled(!item.trim().isEmpty());
 
             }
         });

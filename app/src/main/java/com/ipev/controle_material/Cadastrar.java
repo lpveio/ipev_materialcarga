@@ -82,7 +82,8 @@ public class Cadastrar extends AppCompatActivity {
 
         setContentView(R.layout.activity_cadastrar);
 
-        String[] setores = {"APR-P", "APR-PPP", "APR-PSC", "LAAI", "LAAQ", "LAII", "LAME", "LAPM", "LAPR", "LAPT", "LASI", "OUTRO", "?"};
+        String[] setores = getResources().getStringArray(R.array.setores);
+
 
         Intent intent = getIntent();
         tipo = intent.getIntExtra("inserir", 0);

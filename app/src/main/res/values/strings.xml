@@ -1,3 +1,132 @@
 <resources>
-    <string name="app_name">APR-P Material Carga</string>
+    <string name="app_name">IPEV Material Carga</string>
+
+    <string-array name="setores">
+        <item>ACI - ASSESSORIA DE CONTROLE INTERNO</item>
+        <item>ARQ - SEÇÃO DE ARQUIVO</item>
+        <item>BIB - SUBSEÇÃO DE BIBLIOTECA</item>
+        <item>CFO - COORDENADORIA DE FINANÇAS E ORÇAMENTO</item>
+        <item>CFO-C - SEÇÃO DE COMPRAS</item>
+        <item>CFO-F - SEÇÃO DE FINANÇAS</item>
+        <item>CFO-R - Seção de Registro</item>
+        <item>CFO-X - SEÇÃO DE ALMOXARIFADO</item>
+        <item>CPS - COORDENADORIA DE PLANEJAMENTO E SUPERVISÃO</item>
+        <item>CTI - SEÇÃO DE TECNOLOGIA DA INFORMAÇÃO</item>
+        <item>CTI-I - SUBSEÇÃO DE SISTEMAS DE INFORMAÇÃO</item>
+        <item>CTI-P - ASSESSOR DE PROJETOS EM TECNOLOGIA DA INFORMAÇÃO</item>
+        <item>CTI-R - ASSESSOR DE RECURSOS COMPUTACIONAIS</item>
+        <item>CTI-S - SUBSEÇÃO DE SUPORTE COMPUTACIONAL</item>
+        <item>DIR-SEC - SECRETARIA DA DIREÇÃO</item>
+        <item>EAD - DIVISÃO ADMINISTRATIVA</item>
+        <item>EAD-I - SEÇÃO DE INFRAESTRUTURA E PATRIMÔNIO IMÓVEL</item>
+        <item>EAD-RH - SUBDIVISÃO DE RECURSOS HUMANOS</item>
+        <item>EAD-ST - SEÇÃO DE SEGURANÇA DO TRABALHO</item>
+        <item>EEV - DIVISÃO DE ENSAIOS EM VOO</item>
+        <item>EFEV - DIVISÃO DE FORMAÇÃO DE ENSAIOS EM VOO</item>
+        <item>EPD - DIVISÃO DE PESQUISA E DESENVOLVIMENTO</item>
+        <item>ESM - DIVISÃO DE SUPRIMENTO E MANUTENÇÃO</item>
+        <item>ESM-A - SUBDIVISÃO DE APOIO</item>
+        <item>ESM-ADM - SEÇÃO ADMINISTRATIVA</item>
+        <item>ESM-AF - SEÇÃO DE FERRAMENTARIA</item>
+        <item>ESM-AS - SEÇÃO DE APOIO AO SOLO</item>
+        <item>ESM-CDC -DISTRIBUIÇÃO E CONTROLE DE PUBLICAÇÕES</item>
+        <item>ESM-I - SUBDIVISÃO DE INSPETORIA TÉCNICA</item>
+        <item>ESM-M - SUBDIVISÃO  DE MANUTENÇÃO</item>
+        <item>ESM-MAA - SEÇÃO DE ARMAMENTO AÉREO</item>
+        <item>ESM-MAV - SEÇÃO DE AVIÔNICOS</item>
+        <item>ESM-MCE - SEÇÃO DE CÉLULA E PNEUMÁTICA</item>
+        <item>ESM-MCP - CASA DE PISTA</item>
+        <item>ESM-MEP - SEÇÃO DE ESTRUTURA, PINTURA E LAVAGEM</item>
+        <item>ESM-MEV - SEÇÃO DE EQUIPAMENTO DE VOO E INTERIORES</item>
+        <item>ESM-MH - SEÇÃO DE SISTEMAS HIDRÁULICOS</item>
+        <item>ESM-MMP - SEÇÃO DE GRUPO MOTO-PROPULSOR E HÉLICES</item>
+        <item>ESM-P - SUBDIVISÃO DE PLANEJAMENTO E CONTROLE</item>
+        <item>ESM-S - SUBDIVISÃO DE SUPRIMENTO</item>
+        <item>ESM-SA - SEÇÃO DE ARMAZENAGEM</item>
+        <item>EST - DIVISÃO DE SUPORTE TÉCNICO</item>
+        <item>EST-C - SEÇÃO DE CALIBRAÇÃO</item>
+        <item>EST-IA - SEÇÃO DE ELETRÔNICA APLICADA</item>
+        <item>EST-IE - SEÇÃO DE ENGENHARIA DE INSTRUMENTAÇÃO</item>
+        <item>EST-II - SEÇÃO DE INSTRUMENTAÇÃO DE IMAGENS</item>
+        <item>EST-IM - SEÇÃO DE MECÂNICA</item>
+        <item>EST-IO - SEÇÃO DE OPERAÇÕES DE INSTRUMENTAÇÃO</item>
+        <item>EST-LF - SEÇÃO DE FERRAMENTARIA DE INSTRUMENTAÇÃO</item>
+        <item>EST-T - SUBDIVISÃO DE TELEMETRIA</item>
+        <item>PCAN-SJ - POSTO CAN DE S.J. DOS CAMPOS</item>
+        <item>PROT - SEÇÃO DE PROTOCOLO</item>
+        <item>SCOA - SEÇÃO DE COORDENAÇÃO DE OPERAÇÕES AÉREAS</item>
+        <item>SCS - SEÇÃO DE COMUNICAÇÃO SOCIAL</item>
+        <item>SINT - SEÇÃO DE INTELIGÊNCIA</item>
+        <item>SIPAA - SEÇÃO DE INVESTIGAÇÃO E PREVENÇÃO DE ACIDENTES AER</item>
+        <item>SMA - SEÇÃO DE MEDICINA AEROESPACIAL</item>
+        <item>SOP - SEÇÃO DE OPERAÇÕES</item>
+        <item>SOP-N - SUBSEÇÃO DE NAVEGAÇÃO</item>
+        <item>TSAM - SUBSEÇÃO DE MATERIAL REPARÁVEL</item>
+        <item>VDR - VICE-DIREÇÃO</item>
+    </string-array>
+
+    <string-array name="mini_setores">
+        <item>ACI</item>
+        <item>ARQ</item>
+        <item>BIB</item>
+        <item>CFO</item>
+        <item>CFO-C</item>
+        <item>CFO-F</item>
+        <item>CFO-R</item>
+        <item>CFO-X</item>
+        <item>CPS</item>
+        <item>CTI</item>
+        <item>CTI-I</item>
+        <item>CTI-P</item>
+        <item>CTI-R</item>
+        <item>CTI-S</item>
+        <item>DIR-SEC</item>
+        <item>EAD</item>
+        <item>EAD-I</item>
+        <item>EAD-RH</item>
+        <item>EAD-ST</item>
+        <item>EEF</item>
+        <item>EFEV</item>
+        <item>EPD</item>
+        <item>ESM</item>
+        <item>ESM-A</item>
+        <item>ESM-ADM</item>
+        <item>ESM-AF</item>
+        <item>ESM-AS</item>
+        <item>ESM-CDC</item>
+        <item>ESM-I</item>
+        <item>ESM-M</item>
+        <item>ESM-MAA</item>
+        <item>ESM-MAV</item>
+        <item>ESM-MCE</item>
+        <item>ESM-MCP</item>
+        <item>ESM-MEP</item>
+        <item>ESM-MEV</item>
+        <item>ESM-MH</item>
+        <item>ESM-MMP</item>
+        <item>ESM-P</item>
+        <item>ESM-S</item>
+        <item>ESM-SA</item>
+        <item>EST</item>
+        <item>EST-C</item>
+        <item>EST-IA</item>
+        <item>EST-IE</item>
+        <item>EST-II</item>
+        <item>EST-IM</item>
+        <item>EST-IO</item>
+        <item>EST-LF</item>
+        <item>EST-T</item>
+        <item>PCAN-SJ</item>
+        <item>PROT</item>
+        <item>SCOA</item>
+        <item>SCS</item>
+        <item>SINT</item>
+        <item>SIPAA</item>
+        <item>SMA</item>
+        <item>SOP</item>
+        <item>SOP-N</item>
+        <item>TSAM</item>
+        <item>VDR</item>
+    </string-array>
 </resources>
+

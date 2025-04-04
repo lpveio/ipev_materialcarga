@@ -69,8 +69,6 @@ public class Buscar_Local extends AppCompatActivity {
 
     String txt_sala , txt_predio , txt_setor;
 
-    String[] setores= {"APR-P" ,"APR-PPP", "APR-PSC", "LAAI" ,"LAAQ", "LAII", "LAME","LAPM", "LAPR", "LAPT", "LASI" ,"OUTRO", "?"};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +77,8 @@ public class Buscar_Local extends AppCompatActivity {
 
         Intent intent = getIntent();
         usuario = intent.getStringExtra("USERNAME");
+
+        String[] setores = this.getResources().getStringArray(R.array.setores);
 
         setContentView(R.layout.activity_buscar_local);
 

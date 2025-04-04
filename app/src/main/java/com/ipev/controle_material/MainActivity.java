@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
                 versionALastApp = dataSnapshot.child("versao").getValue(String.class);
                 UrlApk = dataSnapshot.child("link").getValue(String.class);
 
-                compareVersion();
+                //compareVersion();
             }
 
 

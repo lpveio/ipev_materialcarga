@@ -90,7 +90,7 @@ public class EditarItens extends AppCompatActivity {
 
         String[] salasuggestions = {"001", "BANHEIRO FEMININO", "BOX 01", "BOX 02", "BOX 03", "BOX 04", "BOX 05", "COPA", "CORREDOR", "CORREDOR E ÁREA EXTERNA", "CORREDOR SUPERIOR", "FUNDOS", "HALL ENTRADA", "LAME", "LAPM-SC", "LAPR", "LATERAL (ÁREA ESTUFA SEGREGADA)", "SALA 01", "SALA 02", "SALA 03", "SALA 04", "SALA 05", "SALA 06", "SALA 07", "SALA 07 (COPA)", "SALA 09", "SALA 1", "SALA 10", "SALA 101", "SALA 102", "SALA 103", "SALA 103 (ALMOXARIFADO)", "SALA 104", "SALA 106", "SALA 108", "SALA 109", "SALA 11", "SALA 110", "SALA 111", "SALA 112", "SALA 113", "SALA 114", "SALA 115", "SALA 116", "SALA 117", "SALA 118","SALA 119", "SALA 12", "SALA 12 (APM)", "SALA 120", "SALA 120 (COPA)", "SALA 121", "SALA 123", "SALA 13", "SALA 14", "SALA 15", "SALA 16", "SALA 17", "SALA 19", "SALA 2", "SALA 20", "SALA 3", "SALA 4", "SALA 5 - ALMOXARIFADO", "SALA 7", "SALA 8", "SALA 8 - COPA", "SALA 9", "SALA DE ESTOCAGEM - PISO SUPERIOR", "SALA DO SERVIDOR", "SEM SALA", "WC FEMININO, WC MASCULINO", "ÁREA EXTERNA", "ÁREA EXTERNA (AO LADO DO PRÉDIO DA AIE)", "ÁREA EXTERNA (EM FRENTE SALA ESTUFAS)"};
 
-        String[] setores= {"APR-P" ,"APR-PPP", "APR-PSC", "LAAI" ,"LAAQ", "LAII", "LAME","LAPM", "LAPR", "LAPT", "LASI" ,"OUTRO", "?"};
+        String[] setores = getResources().getStringArray(R.array.setores);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, salasuggestions);
 

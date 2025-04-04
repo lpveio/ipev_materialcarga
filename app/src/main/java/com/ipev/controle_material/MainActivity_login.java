@@ -38,7 +38,7 @@ public class MainActivity_login extends AppCompatActivity {
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
-                if (username.equals("admin") && password.equals("aprp2024")) {
+                if (username.equals("admin") && password.equals("admin")) {
                     Intent intent = new Intent(MainActivity_login.this, MainActivity.class);
                     intent.putExtra("USERNAME", username);  // Pass the username to MainActivity
                     startActivity(intent);

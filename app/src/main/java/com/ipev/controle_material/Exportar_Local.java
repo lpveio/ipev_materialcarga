@@ -72,7 +72,7 @@ public class Exportar_Local extends AppCompatActivity {
 
     String txt_sala , txt_predio , txt_setor;
 
-    String[] setores= {"APR-P" ,"APR-PPP", "APR-PSC", "LAAI" ,"LAAQ", "LAII", "LAME","LAPM", "LAPR", "LAPT", "LASI" ,"OUTRO", "?"};
+    String[] setores = getResources().getStringArray(R.array.setores);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

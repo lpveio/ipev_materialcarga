@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -96,7 +97,7 @@ public class Buscar_BMP extends AppCompatActivity {
         }
 
         if (ListFilterBmp.isEmpty()){
-            Toast.makeText(this, "Nenhum BMP encontrado", Toast.LENGTH_LONG);
+            Toast.makeText(this, "Nenhum BMP encontrado", Toast.LENGTH_LONG).show();
             recyclerView.setVisibility(View.GONE);
         } else {
             adapterItens.setFilterBMP(ListFilterBmp);
@@ -159,7 +160,7 @@ public class Buscar_BMP extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Log.e("Firebase", "Erro ao carregar dados: " + error.getMessage());
             }
 
 
