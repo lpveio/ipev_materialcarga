@@ -24,7 +24,7 @@ public class AdapterItens extends RecyclerView.Adapter<AdapterItens.MyViewHolder
 
     private ArrayList<ItensModel> list;
 
-    private String usuario;
+    private String status_usuario;
 
 
 
@@ -38,10 +38,10 @@ public class AdapterItens extends RecyclerView.Adapter<AdapterItens.MyViewHolder
         notifyDataSetChanged();
     }
 
-    public AdapterItens(Context context, ArrayList<ItensModel> list, String usuario) {
+    public AdapterItens(Context context, ArrayList<ItensModel> list, String status) {
         this.context = context;
         this.list = list;
-        this.usuario = usuario;
+        this.status_usuario = status;
     }
 
 
@@ -64,7 +64,7 @@ public class AdapterItens extends RecyclerView.Adapter<AdapterItens.MyViewHolder
         holder.valor_desc.setText(itensModel.getDescricao());
         holder.valor_num_serie.setText(itensModel.getSerial());
 
-        if (usuario.equals("admin")) {
+        if (status_usuario.equals("admin")) {
             holder.editar.setVisibility(View.VISIBLE);
             holder.editar.setOnClickListener(new View.OnClickListener() {
                 @Override

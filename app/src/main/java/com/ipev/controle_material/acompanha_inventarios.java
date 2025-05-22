@@ -242,7 +242,8 @@ public class acompanha_inventarios extends AppCompatActivity implements SelectIn
 
     private void  buscarDBMain(){
 
-        database = FirebaseDatabase.getInstance().getReference("Banco_BMP");
+        database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens");
+
 
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -262,6 +263,8 @@ public class acompanha_inventarios extends AppCompatActivity implements SelectIn
     private void buscarDBInventarios(String name_inventario){
 
         database = FirebaseDatabase.getInstance().getReference(name_inventario);
+
+        database = FirebaseDatabase.getInstance().getReference("Inventarios").child(nome_inventario).child("itens");
 
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

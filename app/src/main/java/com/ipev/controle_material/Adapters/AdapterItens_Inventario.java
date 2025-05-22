@@ -9,10 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -44,7 +47,7 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
 
     private String nome_inventario;
 
-    String usuario;
+    String status_usuario;
 
     FirebaseDatabase database;
 
@@ -63,13 +66,13 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
         notifyDataSetChanged();
     }
 
-    public AdapterItens_Inventario(Context context, ArrayList<ItensModel> list, String nome_inventario, String usuario) {
+    public AdapterItens_Inventario(Context context, ArrayList<ItensModel> list, String nome_inventario, String status) {
         itens_checados = new ArrayList<>();
         buscarDados(nome_inventario);
         this.context = context;
         this.nome_inventario = nome_inventario;
         this.list = list;
-        this.usuario = usuario;
+        this.status_usuario = status;
     }
 
 
@@ -85,9 +88,7 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
 
     private void buscarDados(String nome_inventario) {
 
-        databaseReference = FirebaseDatabase.getInstance().getReference().child(nome_inventario);
-
-
+        databaseReference = FirebaseDatabase.getInstance().getReference("Inventarios").child(nome_inventario).child("itens");
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -130,7 +131,7 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
         holder.valor_num_serie.setText(itensModel.getSerial());
 
 
-        if (usuario.equals("admin")) {
+        if (status_usuario.equals("admin")) {
             holder.editar.setVisibility(View.VISIBLE);
             holder.editar.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -156,19 +157,31 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
 
         if (itens_checados.contains(itensModel.getBMP())){
 
-            holder.check.setBackgroundColor(Color.parseColor("#4CAF50"));
-            holder.check.setText("ITEM ENCONTRADO");
+            holder.cardEncontrado.setCardBackgroundColor(Color.parseColor("#4CAF50"));
+            holder.cardNaoEncontrado.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+            holder.checkText.setTextColor(Color.parseColor("#FFFFFF"));
+            holder.noCheckText.setTextColor(Color.parseColor("#9C9C9C"));
+            holder.checkImage.setColorFilter(ContextCompat.getColor(context, R.color.white));
+            holder.noCheckImagem.setColorFilter(ContextCompat.getColor(context, R.color.cinza_claro));
+
+            //holder.check.setBackgroundColor(Color.parseColor("#4CAF50"));
+            //holder.check.setText("ITEM ENCONTRADO");
         } else {
 
-            holder.check.setBackgroundColor(Color.parseColor("#BC2727"));
-            holder.check.setText("NÃO ENCONTRADO");
+            holder.cardEncontrado.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+            holder.cardNaoEncontrado.setCardBackgroundColor(Color.parseColor("#BC2727"));
+            holder.checkText.setTextColor(Color.parseColor("#9C9C9C"));
+            holder.noCheckText.setTextColor(Color.parseColor("#FFFFFF"));
+            holder.checkImage.setColorFilter(ContextCompat.getColor(context, R.color.cinza_claro));
+            holder.noCheckImagem.setColorFilter(ContextCompat.getColor(context, R.color.white));
+
         }
 
-        holder.check.setOnClickListener(new View.OnClickListener() {
+        holder.cardEncontrado.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                databaseReference = FirebaseDatabase.getInstance().getReference().child(nome_inventario);
+                databaseReference = FirebaseDatabase.getInstance().getReference("Inventarios").child(nome_inventario).child("itens");
 
                 Query query = databaseReference.orderByChild("BMP").equalTo(itensModel.getBMP());
 
@@ -181,8 +194,12 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void unused) {
-                                            holder.check.setBackgroundColor(Color.parseColor("#4CAF50"));
-                                            holder.check.setText("ITEM ENCONTRADO");
+                                            holder.cardEncontrado.setCardBackgroundColor(Color.parseColor("#4CAF50"));
+                                            holder.cardNaoEncontrado.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+                                            holder.checkText.setTextColor(Color.parseColor("#FFFFFF"));
+                                            holder.noCheckText.setTextColor(Color.parseColor("#9C9C9C"));
+                                            holder.checkImage.setColorFilter(ContextCompat.getColor(context, R.color.white));
+                                            holder.noCheckImagem.setColorFilter(ContextCompat.getColor(context, R.color.cinza_claro));
                                             Toast.makeText(context, "ITEM CHECADO", Toast.LENGTH_SHORT).show();
                                             AtualizaDataDB();
 
@@ -194,10 +211,34 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
                                             Toast.makeText(context, "ERRO AO CHECAR ITEM, TENTE NOVAMENTE", Toast.LENGTH_SHORT).show();
                                         }
                                     });
-                        } else {
+                        }
 
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        // Manipule o erro, se necessário
+                    }
+                });
+
+            }
+        });
+
+        holder.cardNaoEncontrado.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                databaseReference = FirebaseDatabase.getInstance().getReference("Inventarios").child(nome_inventario).child("itens");
+
+                Query query = databaseReference.orderByChild("BMP").equalTo(itensModel.getBMP());
+
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        if (dataSnapshot.exists()) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setTitle("Deseja remover o item dos 'ITENS ENCONTRADOS'");
+                            builder.setTitle("Deseja remover o material do inventário ?");
 
                             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
@@ -212,8 +253,12 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
                                                         Toast.makeText(context, "ITEM REMOVIDO", Toast.LENGTH_SHORT).show();
-                                                        holder.check.setBackgroundColor(Color.parseColor("#BC2727"));
-                                                        holder.check.setText("NÃO ENCONTRADO");
+                                                        holder.cardEncontrado.setCardBackgroundColor(Color.parseColor("#FFFFFF"));
+                                                        holder.cardNaoEncontrado.setCardBackgroundColor(Color.parseColor("#BC2727"));
+                                                        holder.checkText.setTextColor(Color.parseColor("#9C9C9C"));
+                                                        holder.noCheckText.setTextColor(Color.parseColor("#FFFFFF"));
+                                                        holder.checkImage.setColorFilter(ContextCompat.getColor(context, R.color.cinza_claro));
+                                                        holder.noCheckImagem.setColorFilter(ContextCompat.getColor(context, R.color.white));
                                                         AtualizaDataDB();
                                                     }
                                                 })
@@ -282,22 +327,30 @@ public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_I
 
     public static class MyViewHolder extends  RecyclerView.ViewHolder {
 
-        TextView valor_predio, valor_setor, valor_bmp , valor_obs, valor_sala, valor_desc, valor_num_serie;
-        Button check, editar;
+        TextView valor_predio, valor_setor, valor_bmp , valor_obs, valor_sala, valor_desc, valor_num_serie, checkText, noCheckText;
+        Button checkON, checkOFF, editar;
+        CardView cardEncontrado , cardNaoEncontrado;
+        ImageView checkImage, noCheckImagem;
 
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
+            checkImage = itemView.findViewById(R.id.icon_encontrado);
+            noCheckImagem = itemView.findViewById(R.id.icon_nao_encontrado);
+            checkText = itemView.findViewById(R.id.icon_text_encontrado);
+            noCheckText = itemView.findViewById(R.id.icon_text_nao_encontrado);
+            cardEncontrado = itemView.findViewById(R.id.card_encontrado);
+            cardNaoEncontrado = itemView.findViewById(R.id.card_nao_encontrado);
             valor_predio = itemView.findViewById(R.id.valor_predio);
             valor_setor = itemView.findViewById(R.id.valor_setor);
             valor_bmp = itemView.findViewById(R.id.valor_bmp);
             valor_obs = itemView.findViewById(R.id.valor_obs);
             valor_sala = itemView.findViewById(R.id.valor_sala);
             valor_desc = itemView.findViewById(R.id.valor_descricao);
-            check = itemView.findViewById(R.id.btn_check);
             editar = itemView.findViewById(R.id.btn_editar_itens);
             valor_num_serie = itemView.findViewById(R.id.valor_num_serie);
+
 
 
 

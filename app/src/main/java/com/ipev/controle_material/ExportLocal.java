@@ -3,10 +3,11 @@ package com.ipev.controle_material;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,19 +29,27 @@ import com.google.firebase.database.ValueEventListener;
 import com.ipev.controle_material.Adapters.AdapterItens;
 import com.ipev.controle_material.Model.ExcelEditor;
 import com.ipev.controle_material.Model.ItensModel;
-import com.ipev.controle_material.Model.SetupView;
+import com.ipev.controle_material.Model.JsonCacheManager;
+import com.ipev.controle_material.databinding.ActivityBuscarLocalBinding;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-public class Exportar_Local extends AppCompatActivity {
+public class ExportLocal extends AppCompatActivity {
 
+    private ActivityBuscarLocalBinding binding;
     RecyclerView recyclerView;
     DatabaseReference database;
 
     ProgressBar loading;
     AdapterItens adapterItens;
+
+    private final String FILE_NAME = "cache_bmp.json";
 
     AutoCompleteTextView auto_setor, auto_predio , auto_sala;
 
@@ -59,34 +68,35 @@ public class Exportar_Local extends AppCompatActivity {
 
     ArrayAdapter<String> adapter_setor;
 
-    Button exportar;
-
     ArrayAdapter<String> adapter_sala;
 
-    ArrayList<String> PrediosList, SetorList, SalaList;
+    ArrayList<String> PrediosList, SetorList, SalaList , SalasTotal;
 
-    public int tipo;
+    public int tipo = 0;
 
-    Context context;
+    String status_usuario, username;
+
 
     String usuario;
 
-    String txt_sala , txt_predio , txt_setor;
+    Context context;
 
-    String[] setores = getResources().getStringArray(R.array.setores);
+    Button exportar;
+
+    String txt_sala , txt_predio , txt_setor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_exportar_local);
         context = getApplicationContext();
 
-        setContentView(R.layout.activity_exportar_local);
+        String[] setores = this.getResources().getStringArray(R.array.setores);
 
-        Intent intent = getIntent();
-        usuario = intent.getStringExtra("USERNAME");
+        initComponentes();
 
-        recyclerView = findViewById(R.id.recycler_buscar_local);
+        carregarUser();
 
         exportar = findViewById(R.id.btn_exportar);
 
@@ -96,7 +106,7 @@ public class Exportar_Local extends AppCompatActivity {
                 if(tipo == 3){
                     ExportarLista(exportedList);
                 } else{
-                    AlertDialog.Builder builder = new AlertDialog.Builder(Exportar_Local.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ExportLocal.this);
                     builder.setTitle("Aviso");
                     builder.setMessage("Selecione um Setor, Prédio e Sala para exportar a lista");
                     AlertDialog alertDialog = builder.create();
@@ -107,20 +117,9 @@ public class Exportar_Local extends AppCompatActivity {
             }
         });
 
-        auto_setor = findViewById(R.id.auto_complete_2_setor);
-        loading = findViewById(R.id.progress_busca_local);
-
-        auto_predio = findViewById(R.id.auto_complete_2_predio);
-        auto_predio.setEnabled(false);
-
-        auto_sala = findViewById(R.id.auto_complete_2_sala);
-        auto_sala.setEnabled(false);
-
         adapter_setor = new ArrayAdapter<String>(this, R.layout.list_item, setores);
 
         auto_setor.setAdapter(adapter_setor);
-
-        tipo = 0;
 
         auto_setor.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -139,7 +138,7 @@ public class Exportar_Local extends AppCompatActivity {
             }
         });
 
-        database = FirebaseDatabase.getInstance().getReference("Banco_BMP");
+        database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV");
         filteredSetorList = new ArrayList<>();
         itensModelArrayList = new ArrayList<>();
         filteredPredioList = new ArrayList<>();
@@ -148,84 +147,184 @@ public class Exportar_Local extends AppCompatActivity {
         PrediosList = new ArrayList<>();
         SalaList = new ArrayList<>();
 
-        adapterItens = new AdapterItens(this, itensModelArrayList, usuario);
+        adapterItens = new AdapterItens(this, itensModelArrayList, status_usuario);
         recyclerView.setAdapter(adapterItens);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        buscarDados();
+        //SincronizadorDeDados.sincronizarCacheComFirebase(this);
+        carregarItens();
 
     }
 
-    private boolean isConnectedToInternet() {
+
+    private void carregarUser() {
+        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        username = sharedPref.getString("nome", "Usuário");
+        String setor = sharedPref.getString("setor", "");
+        status_usuario = sharedPref.getString("status", "cliente");
+        String uid = sharedPref.getString("uid", "");
+    }
+
+
+    private void ExportarLista(ArrayList<ItensModel> lista ){
+        ExcelEditor.preencherExcelAsync(this, lista);
+    }
+
+    private void initComponentes(){
+
+        recyclerView = findViewById(R.id.recycler_buscar_local);
+
+        auto_setor = findViewById(R.id.auto_complete_2_setor);
+        loading = findViewById(R.id.progress_busca_local);
+
+        auto_predio = findViewById(R.id.auto_complete_2_predio);
+        auto_predio.setEnabled(false);
+
+        auto_sala = findViewById(R.id.auto_complete_2_sala);
+        auto_sala.setEnabled(false);
+
+
+    }
+
+    private boolean isConectado() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    private void buscarDados(){
 
-
-        loading.setVisibility(View.VISIBLE);
-
-        if (!isConnectedToInternet()) {
-            // Se não houver conexão, exibe uma mensagem após 10 segundos
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(Exportar_Local.this);
-                    builder.setTitle("ERRO");
-                    builder.setIcon(R.drawable.error);
-                    builder.setMessage("Verifique sua conexão com a internet ou reinicie o app");
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-                    loading.setVisibility(View.INVISIBLE);
-                }
-            }, 5000); // 10 segundos de atraso
-            return;
-        }
-
-        database.addValueEventListener(new ValueEventListener() {
+    private void baixarDadosDoFirebase(String novaVersao) {
+        database.child("itens").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                JSONArray jsonArray = new JSONArray();
                 itensModelArrayList.clear();
 
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                for (DataSnapshot itemSnapshot : snapshot.getChildren()) {
+                    ItensModel item = itemSnapshot.getValue(ItensModel.class);
+                    if (item != null) {
+                        itensModelArrayList.add(item);
 
-                    ItensModel itensModel = dataSnapshot.getValue(ItensModel.class);
+                        JSONObject obj = new JSONObject();
+                        try {
+                            obj.put("ID", item.getId());
+                            obj.put("BMP", item.getBMP());
+                            obj.put("setor", item.getSetor());
+                            obj.put("sala", item.getSala());
+                            obj.put("predio", item.getPredio());
+                            obj.put("serial", item.getSerial());
+                            obj.put("descricao", item.getDescricao());
+                            obj.put("observacao", item.getObservacao());
 
-                    itensModelArrayList.add(itensModel);
 
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        jsonArray.put(obj);
+                    }
                 }
 
-                if (tipo == 0){
-                    exportedList = itensModelArrayList;
-                    adapterItens.notifyDataSetChanged();
-
-                } else if (tipo == 1) {
-                    filterSetorList(txt_setor);
-
-                } else if (tipo == 2) {
-                    filterSetorList(txt_setor);
-                    filterPredioList(txt_predio);
-
-                } else if (tipo == 3) {
-                    filterSetorList(txt_setor);
-                    filterPredioList(txt_predio);
-                    filterSalaList(txt_sala);
-                }
-
+                salvarArquivoLocal(jsonArray, novaVersao);
+                AplicarFiltros();
+                adapterItens.notifyDataSetChanged();
                 loading.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ExportLocal.this, "Erro ao baixar dados", Toast.LENGTH_SHORT).show();
+                loading.setVisibility(View.INVISIBLE);
+            }
+        });
+    }
 
+
+    private void salvarArquivoLocal(JSONArray dados, String versao) {
+        JsonCacheManager.salvar(this, dados, versao);
+        Toast.makeText(this, "Banco de Dados Local Atualizado", Toast.LENGTH_LONG).show();
+    }
+
+    private String obterVersaoLocal() {
+        Log.d("Versao local", JsonCacheManager.obterVersao(this));
+        return JsonCacheManager.obterVersao(this);
+    }
+
+
+
+    private void carregarItens() {
+        loading.setVisibility(View.VISIBLE);
+
+        if (isConectado()) {
+            database.child("timestamp").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String versaoFirebase = snapshot.getValue(String.class);
+                    String versaoLocal = obterVersaoLocal();
+
+                    if (!versaoFirebase.contentEquals(versaoLocal)) {
+                        baixarDadosDoFirebase(versaoFirebase);
+                    } else {
+                        carregarDadosDoArquivoLocal();
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("Firebase", "Erro ao ler versão: " + error.getMessage());
+                    carregarDadosDoArquivoLocal(); // fallback offline
+                }
+            });
+        } else {
+            carregarDadosDoArquivoLocal(); // offline
+            Toast.makeText(this, "Sem conexão com a internet", Toast.LENGTH_LONG).show();
+        }
+
+        //swipeRefreshLayout.setRefreshing(false);
+    }
+
+    private void carregarDadosDoArquivoLocal() {
+        try {
+            JSONArray array = JsonCacheManager.obterDados(this);
+            if (array.length() == 0) {
+                Toast.makeText(this, "Sem dados offline disponíveis", Toast.LENGTH_LONG).show();
+                loading.setVisibility(View.INVISIBLE);
+                return;
             }
 
 
-        });
+            itensModelArrayList.clear();
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                ItensModel item = new ItensModel();
+                item.setId(obj.getInt("ID"));
+                item.setBMP(obj.getString("BMP"));
+                item.setSetor(obj.getString("setor"));
+                item.setSala(obj.getString("sala"));
+                item.setPredio(obj.getString("predio"));
+                item.setSerial(obj.getString("serial"));
+                item.setDescricao(obj.optString("descricao", ""));
+                item.setObservacao(obj.optString("observacao", ""));
+
+                itensModelArrayList.add(item);
+            }
+
+
+            AplicarFiltros();
+
+            adapterItens.notifyDataSetChanged();
+            Toast.makeText(this, "Dados Carregados Localmente - Versao : " + obterVersaoLocal(), Toast.LENGTH_SHORT).show();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Erro ao carregar dados locais", Toast.LENGTH_SHORT).show();
+        } finally {
+            loading.setVisibility(View.INVISIBLE);
+        }
     }
+
+
 
     private void SetPredioList(ArrayList<String> predio_list){
 
@@ -244,15 +343,9 @@ public class Exportar_Local extends AppCompatActivity {
                 txt_predio = item;
                 auto_sala.setText("");
                 filterPredioList(item);
-
-
             }
         });
 
-    }
-
-    private void ExportarLista(ArrayList<ItensModel> lista ){
-            ExcelEditor.preencherExcelAsync(this, lista);
     }
 
     private void SetSalaList(ArrayList<String> sala_list){
@@ -275,7 +368,6 @@ public class Exportar_Local extends AppCompatActivity {
     }
 
     private void filterSetorList(String setor) {
-
         filteredSetorList.clear();
         PrediosList.clear();
 
@@ -295,8 +387,7 @@ public class Exportar_Local extends AppCompatActivity {
 
                 for (ItensModel local_filter : filteredSetorList) {
                     PrediosList.add(local_filter.getPredio());
-                    SetupView.removeDuplicates(PrediosList);
-                    //removeDuplicates(PrediosList);
+                    removeDuplicates(PrediosList);
                     Collections.sort(PrediosList);
                 }
                 adapterItens.filterList(filteredSetorList);
@@ -310,13 +401,14 @@ public class Exportar_Local extends AppCompatActivity {
 
             for (ItensModel itemfilter : filteredSetorList) {
 
-                if (itemfilter.getPredio().contains(predio)) {
+                if (itemfilter.getPredio().contentEquals(predio)) {
                     filteredPredioList.add(itemfilter);
                 }
 
             }
 
             exportedList = filteredPredioList;
+
             if (filteredPredioList.isEmpty()) {
                 Toast.makeText(this, "Nenhum Item Encontrado", Toast.LENGTH_SHORT).show();
             } else {
@@ -338,7 +430,7 @@ public class Exportar_Local extends AppCompatActivity {
 
         for (ItensModel itemfilter : filteredPredioList){
 
-            if (itemfilter.getSala().contains(sala)){
+            if (itemfilter.getSala().contentEquals(sala)){
                 filteredSalaList.add(itemfilter);
             }
         }
@@ -369,12 +461,31 @@ public class Exportar_Local extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onRestart() {
+    private void AplicarFiltros() {
 
-        buscarDados();
+        if (tipo == 0){
+            exportedList = itensModelArrayList;
 
-        super.onRestart();
+        } else if (tipo == 1) {
+            filterSetorList(txt_setor);
+
+        } else if (tipo == 2) {
+            filterSetorList(txt_setor);
+            filterPredioList(txt_predio);
+
+        } else if (tipo == 3) {
+            filterSetorList(txt_setor);
+            filterPredioList(txt_predio);
+            filterSalaList(txt_sala);
+        }
     }
 
-}
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("onRestart", "onRestart called");
+        carregarItens();
+
+        }
+    }

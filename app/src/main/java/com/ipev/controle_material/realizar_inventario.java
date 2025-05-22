@@ -3,6 +3,7 @@ package com.ipev.controle_material;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -39,8 +40,6 @@ public class realizar_inventario extends AppCompatActivity {
 
     String txt_sala , txt_predio , txt_setor;
 
-
-
     DatabaseReference database;
 
     ProgressBar loading;
@@ -50,12 +49,11 @@ public class realizar_inventario extends AppCompatActivity {
 
     private SearchView searchview;
 
-    Button finaliza;
     ArrayList<ItensModel> itensModelArrayList;
 
     ArrayList<ItensModel> filteredSetorList;
 
-    Button buttonFinaliza;
+    private String status_usuario;
 
     ArrayList<ItensModel> filteredPredioList;
 
@@ -69,11 +67,7 @@ public class realizar_inventario extends AppCompatActivity {
 
     ArrayList<String> PrediosList, SetorList, SalaList;
 
-    String[] setores = getResources().getStringArray(R.array.setores);
-
     public int tipo;
-
-    String usuario;
 
    String nome_inventario;
 
@@ -86,13 +80,15 @@ public class realizar_inventario extends AppCompatActivity {
         auto_setor = findViewById(R.id.auto_complete_3_setor);
         auto_setor.setText("TODOS");
         loading = findViewById(R.id.progress_busca_local);
-        buttonFinaliza = findViewById(R.id.button_finaliza);
+        //buttonFinaliza = findViewById(R.id.button_finaliza);
 
+        String[] setores = getResources().getStringArray(R.array.setores);
+
+        carregarUser();
 
         Intent intent = getIntent();
         if(intent != null) {
             nome_inventario = intent.getStringExtra("nome_inventario");
-            usuario = intent.getStringExtra("USERNAME");
         }
 
         auto_predio = findViewById(R.id.auto_complete_3_predio);
@@ -135,7 +131,8 @@ public class realizar_inventario extends AppCompatActivity {
             }
         });
 
-        database = FirebaseDatabase.getInstance().getReference("Banco_BMP");
+        database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens");
+
         filteredSetorList = new ArrayList<>();
         itensModelArrayList = new ArrayList<>();
         filteredPredioList = new ArrayList<>();
@@ -144,7 +141,7 @@ public class realizar_inventario extends AppCompatActivity {
         PrediosList = new ArrayList<>();
         SalaList = new ArrayList<>();
 
-        adapterItens = new AdapterItens_Inventario(this, itensModelArrayList, nome_inventario, usuario);
+        adapterItens = new AdapterItens_Inventario(this, itensModelArrayList, nome_inventario, status_usuario);
         recyclerView.setAdapter(adapterItens);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -168,9 +165,17 @@ public class realizar_inventario extends AppCompatActivity {
 
     }
 
+    private void carregarUser() {
+
+        SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        String nome = sharedPref.getString("nome", "Usuário");
+        String setor = sharedPref.getString("setor", "");
+        status_usuario = sharedPref.getString("status", "");
+        String uid = sharedPref.getString("uid", "");
+    }
+
     private void filterBMB(String bmp){
         ArrayList<ItensModel> ListFilterBmp = new ArrayList<>();
-
 
         if (tipo == 0) {
 
@@ -198,8 +203,10 @@ public class realizar_inventario extends AppCompatActivity {
 
         if (ListFilterBmp.isEmpty()){
             Toast.makeText(this, "Nenhum BMP encontrado", Toast.LENGTH_LONG);
+            recyclerView.setVisibility(View.GONE);
         } else {
             adapterItens.setFilterBMP(ListFilterBmp);
+            recyclerView.setVisibility(View.VISIBLE);
         }
 
     }
@@ -241,7 +248,7 @@ public class realizar_inventario extends AppCompatActivity {
                 String item = adapterView.getItemAtPosition(i).toString();
                 txt_sala = item;
                 filterSalaList(item);
-                buttonFinaliza.setEnabled(!item.trim().isEmpty());
+
 
             }
         });

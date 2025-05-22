@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "532044574055",
+    "firebase_url": "https://ipev-carga-default-rtdb.firebaseio.com",
     "project_id": "ipev-carga",
     "storage_bucket": "ipev-carga.firebasestorage.app"
   },

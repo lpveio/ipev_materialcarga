@@ -66,8 +66,8 @@
             android:layout_height="120dp"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
-            android:layout_marginTop="35dp"
-            android:layout_marginBottom="35dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="20dp"
             app:cardCornerRadius="15dp"
             app:cardElevation="12dp">
 
@@ -102,13 +102,12 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentBottom="true"
                     android:layout_marginStart="5dp"
-
                     android:layout_marginBottom="8dp"
                     android:layout_toStartOf="@+id/imageView2"
                     android:autoSizeTextType="uniform"
                     android:text="Criar novo inventário setorial, ou inventário anual"
                     android:textColor="@color/black"
-                    android:textSize="17sp"
+                    android:textSize="15sp"
                     android:textStyle="bold">
 
                 </TextView>
@@ -139,8 +138,7 @@
             android:layout_height="120dp"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="35dp"
+            android:layout_marginBottom="20dp"
             app:cardCornerRadius="15dp"
             app:cardElevation="12dp">
 
@@ -174,7 +172,6 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentBottom="true"
                     android:layout_marginStart="5dp"
-
                     android:layout_marginBottom="8dp"
                     android:layout_toStartOf="@+id/imageView5"
                     android:autoSizeTextType="uniform"
@@ -209,7 +206,7 @@
             android:layout_height="120dp"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp"
-            android:layout_marginTop="15dp"
+
             android:layout_marginBottom="15dp"
             app:cardCornerRadius="15dp"
             app:cardElevation="12dp">

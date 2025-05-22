@@ -56,7 +56,7 @@
                     android:layout_width="72dp"
                     android:layout_height="72dp"
                     android:layout_marginStart="5dp"
-                    android:src="@drawable/logo_apr_borda"
+                    android:src="@drawable/bolacha_ipev"
                     android:layout_weight="1"
                     />
 

@@ -1,9 +1,10 @@
 package com.ipev.controle_material;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.ipev.controle_material.Model.InventarioModel;
+import com.ipev.controle_material.Model.SetupView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,11 +31,10 @@ public class inventario extends AppCompatActivity {
 
     DatabaseReference databaseReference;
 
-    String nome_do_inventario;
 
     AlertDialog dialog;
 
-    String usuario;
+    String username, status_usuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +42,7 @@ public class inventario extends AppCompatActivity {
 
         setContentView(R.layout.activity_inventario);
 
-        Intent intent = getIntent();
-        usuario = intent.getStringExtra("USERNAME");
+        carregarUser();
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
 
@@ -54,7 +54,7 @@ public class inventario extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (usuario.equals("admin")) {
+                if (status_usuario.equals("admin")) {
                     dialog.show();
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(inventario.getContext());
@@ -82,7 +82,7 @@ public class inventario extends AppCompatActivity {
             public void onClick(View v) {
 
                 Intent intent = new Intent(inventario.this, acompanha_inventarios.class);
-                intent.putExtra("USERNAME", usuario);
+                intent.putExtra("USERNAME", status_usuario);
                 startActivity(intent);
             }
         });
@@ -94,7 +94,9 @@ public class inventario extends AppCompatActivity {
         EditText edt_inventario, edt_nome;
         edt_inventario = view.findViewById(R.id.nome_inventario_edt);
         edt_nome = view.findViewById(R.id.nome_criador_edt);
+        edt_nome.setText(username);
         Button save = view.findViewById(R.id.btn_salvar_inv);
+
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,6 +110,12 @@ public class inventario extends AppCompatActivity {
         dialog = builder.create();
         dialog.getWindow().setDimAmount(0.9f);
 
+    }
+
+    private void carregarUser() {
+
+        username = SetupView.getNome(this);
+        status_usuario = SetupView.getStatus(this);
     }
 
     private void insertStringToDatabase(String string , String nome) {

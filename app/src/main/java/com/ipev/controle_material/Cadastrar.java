@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ipev.controle_material.Model.ItensModel;
+import com.ipev.controle_material.Model.VersaoManager;
 import com.ipev.controle_material.Model.siloms_itens;
 
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class Cadastrar extends AppCompatActivity {
 
         setContentView(R.layout.activity_cadastrar);
 
+
         String[] setores = getResources().getStringArray(R.array.setores);
 
 
@@ -90,13 +92,11 @@ public class Cadastrar extends AppCompatActivity {
         database = FirebaseDatabase.getInstance();
         auto_setor = findViewById(R.id.auto_complete_setor);
         auto_predio = findViewById(R.id.auto_complete_predio);
-        auto_estado = findViewById(R.id.auto_complete_estado);
         txt_sala = findViewById(R.id.text_edit_sala);
         txt_bmp = findViewById(R.id.text_edit_bmp);
         txt_desc = findViewById(R.id.text_edit_desc);
         txt_sn = findViewById(R.id.text_edit_serial);
         txt_obs = findViewById(R.id.text_edit_obs);
-        sem_sala_check = findViewById(R.id.checkBox2);
         loading = findViewById(R.id.progress_cadastrar);
         cardView = findViewById(R.id.cardView5);
 
@@ -105,16 +105,6 @@ public class Cadastrar extends AppCompatActivity {
             txt_desc.setText(intent.getStringExtra("desc"));
         }
 
-        sem_sala_check.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (sem_sala_check.isChecked()) {
-                    txt_sala.setText("SEM SALA");
-                } else {
-                    txt_sala.setText("");
-                }
-            }
-        });
         adapter_setor = new ArrayAdapter<String>(this, R.layout.list_item, setores);
 
         auto_setor.setAdapter(adapter_setor);
@@ -132,11 +122,12 @@ public class Cadastrar extends AppCompatActivity {
             }
         });
 
-        String[] predios = {"E0031", "E0033", "E0037", "E0037 B", "E0042", "E0043", "E0044", "E0045", "E0046", "E0050", "E0051", "E0053", "E0076", "E0077",};
 
 
         auto_predio.setEnabled(false);
 
+
+        String[] predios = getResources().getStringArray(R.array.predios);
 
         adapter_predio = new ArrayAdapter<String>(this, R.layout.list_item, predios);
 
@@ -151,51 +142,12 @@ public class Cadastrar extends AppCompatActivity {
 
                 nome_predio = item;
 
-                auto_estado.setEnabled(true);
-
             }
         });
-
-        String[] estado = {"Em utilização", "Separado para Descarga", "Emprestado", "Tranferido", "Sem nº de BMB"};
-
-
-        auto_estado.setEnabled(false);
-
-        adapter_estado = new ArrayAdapter<String>(this, R.layout.list_item, estado);
-
-        auto_estado.setAdapter(adapter_estado);
-
-        auto_estado.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
-
-                String item = adapterView.getItemAtPosition(i).toString();
-
-                nome_estado = item;
-
-                txt_sala.setEnabled(true);
-                txt_bmp.setEnabled(true);
-                txt_obs.setEnabled(true);
-                txt_sn.setEnabled(true);
-                txt_desc.setEnabled(true);
-
-
-            }
-        });
-
-
-        txt_sala.setEnabled(false);
 
         txt_sala.setFilters(new InputFilter[]{
                 new InputFilter.AllCaps()
         });
-
-
-        txt_bmp.setEnabled(false);
-        txt_sn.setEnabled(false);
-        txt_obs.setEnabled(false);
-        txt_obs.setEnabled(false);
 
         salvar = findViewById(R.id.btn_salvar_cadastro);
 
@@ -220,7 +172,7 @@ public class Cadastrar extends AppCompatActivity {
         if (!TextUtils.isEmpty(text_sala) && !TextUtils.isEmpty(numero_bmp) && !TextUtils.isEmpty(descricao_item)) {
             loading.setVisibility(View.VISIBLE);
             cardView.setAlpha(0.3f);
-            buscarDados();
+           BuscarUltimo();
         } else {
 
             if (TextUtils.isEmpty(numero_bmp)) {
@@ -232,20 +184,7 @@ public class Cadastrar extends AppCompatActivity {
             } else if (TextUtils.isEmpty(text_sala)) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(Cadastrar.this);
                 builder.setTitle("Aviso");
-                builder.setMessage("Insira a SALA que está alocado, ou caso o item não esteje em nenhuma sala clique em SEM SALA");
-                builder.setPositiveButton("SEM SALA", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        txt_sala.setText("SEM SALA");
-                    }
-                });
-
-                builder.setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel(); // Fecha o AlertDialog
-                    }
-                });
+                builder.setMessage("Insira a SALA que está alocado");
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
 
@@ -264,7 +203,7 @@ public class Cadastrar extends AppCompatActivity {
     private void buscarDados() {
 
         database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("Banco_BMP");
+        databaseReference = database.getReference("Banco_Dados_IPEV").child("itens");
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -282,11 +221,40 @@ public class Cadastrar extends AppCompatActivity {
         });
     }
 
+
+    public void BuscarUltimo() {
+        DatabaseReference itensRef = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens");
+
+        itensRef.orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    String ultimaChave = child.getKey(); // Isso retorna "3"
+
+                    addCadastro(Long.parseLong(ultimaChave));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("FIREBASE", "Erro: " + error.getMessage());
+            }
+        });
+    }
+
+    private void atualizaVersaoFirebase() {
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("timestamp");
+        database.setValue(VersaoManager.gerarVersaoTimestamp());
+    }
+
     public void addCadastro(long quantidadeItens) {
 
         quantidadeItens++;
+
         database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("Banco_BMP").child(String.valueOf(quantidadeItens));
+        databaseReference = database.getReference("Banco_Dados_IPEV").child("itens").child(String.valueOf(quantidadeItens));
+
         databaseReference.child("id").setValue(quantidadeItens);
         databaseReference.child("BMP").setValue(numero_bmp);
         databaseReference.child("setor").setValue(nome_setor);
@@ -309,6 +277,8 @@ public class Cadastrar extends AppCompatActivity {
                         builder.setMessage("Item cadastrado com sucesso !");
                         AlertDialog alertDialog = builder.create();
                         alertDialog.show();
+
+                        atualizaVersaoFirebase();
 
                     }
                 })

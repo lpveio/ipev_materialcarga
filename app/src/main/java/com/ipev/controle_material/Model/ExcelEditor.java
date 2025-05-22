@@ -79,9 +79,18 @@ public class ExcelEditor {
 
         showProgressDialog(context);
 
+        Log.d("", "preencherExcelFullAsync itens 0 :"  + itens.size());
+
+        Log.d("", "preencherExcelFullAsync 01");
+
         AsyncTask<Void, Void, Boolean> asyncTask = new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
+
+                Log.d("", "preencherExcelFullAsync 02");
+
+
+
                 return preencherExcelFullBD(context, itens);
             }
 
@@ -122,25 +131,19 @@ public class ExcelEditor {
             Workbook workbook = new XSSFWorkbook(in);
             Sheet sheet = workbook.getSheetAt(0); // Obtém a primeira planilha
 
-            Cell cellC13 = sheet.getRow(12).getCell(2);
-            if (cellC13 == null){
-                cellC13 = sheet.getRow(12).createCell(2);
+            Cell cellD12 = sheet.getRow(11).getCell(3);
+            if (cellD12 == null){
+                cellD12 = sheet.getRow(12).createCell(3);
             }
-            cellC13.setCellValue(itens.get(0).getSetor());
+            cellD12.setCellValue(itens.get(0).getSala());
 
-            Cell cellF13 = sheet.getRow(12).getCell(5);
-            if (cellF13 == null){
-                cellF13 = sheet.getRow(12).createCell(5);
+            Cell cellF12 = sheet.getRow(11).getCell(4);
+            if (cellF12 == null){
+                cellF12 = sheet.getRow(12).createCell(4);
             }
-            cellF13.setCellValue(itens.get(0).getPredio());
+            cellF12.setCellValue(itens.get(0).getSetor());
 
-            Cell cellI13 = sheet.getRow(12).getCell(8);
-            if (cellI13 == null){
-                cellI13 = sheet.getRow(12).createCell(8);
-            }
-            cellI13.setCellValue(itens.get(0).getSala());
-
-            sheet.shiftRows(15, sheet.getLastRowNum(), itens.size());
+            sheet.shiftRows(14, sheet.getLastRowNum(), itens.size());
 
             CellStyle bordaStyle = workbook.createCellStyle();
             bordaStyle.setBorderTop(BorderStyle.THIN);
@@ -148,7 +151,7 @@ public class ExcelEditor {
             bordaStyle.setBorderLeft(BorderStyle.THIN);
             bordaStyle.setBorderRight(BorderStyle.THIN);
 
-            int linha = 14;
+            int linha = 13;
 
             for (int i = 0; i < itens.size(); i++) {
                 linha++;
@@ -168,21 +171,24 @@ public class ExcelEditor {
                 cell6.setCellStyle(bordaStyle);
                 Cell cell7 = row.createCell(6);
                 cell7.setCellStyle(bordaStyle);
+
+                sheet.addMergedRegion(new CellRangeAddress(linha, linha , 1, 6));
+
+
                 Cell cell8 = row.createCell(7);
                 cell8.setCellStyle(bordaStyle);
-
-                sheet.addMergedRegion(new CellRangeAddress(linha, linha , 1, 7));
-
                 Cell cell9 = row.createCell(8);
                 cell9.setCellStyle(bordaStyle);
+
+                sheet.addMergedRegion(new CellRangeAddress(linha, linha , 7, 8));
+
                 Cell cell10 = row.createCell(9);
                 cell10.setCellStyle(bordaStyle);
 
-                sheet.addMergedRegion(new CellRangeAddress(linha, linha , 8, 9));
-
-                cell1.setCellValue(itens.get(i).getBMP());
+                cell1.setCellValue(i+1);
                 cell2.setCellValue(itens.get(i).getDescricao());
-                cell8.setCellValue(itens.get(i).getSala());
+                cell8.setCellValue(itens.get(i).getBMP());
+                cell10.setCellValue("1");
 
             }
 
@@ -277,12 +283,14 @@ public class ExcelEditor {
 
     private static boolean preencherExcelFullBD(Context context, List<ItensModel> itens) {
         try {
+
+
             Date dataAtual = Calendar.getInstance().getTime();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy");
             String dataFormatada = dateFormat.format(dataAtual);
             SimpleDateFormat horaFormat = new SimpleDateFormat("HH_mm_ss");
             String hora = horaFormat.format(dataAtual);
-            String nome_file = "APR_Dados_" + dataFormatada + "_" + hora;
+            String nome_file = "IPEV_CARGA_" + dataFormatada + "_" + hora;
 
             InputStream in = context.getAssets().open("xls/planilha_full.xlsx");
 
@@ -295,7 +303,7 @@ public class ExcelEditor {
             bordaStyle.setBorderLeft(BorderStyle.THIN);
             bordaStyle.setBorderRight(BorderStyle.THIN);
 
-            int linha = 0;
+            int linha = 3;
 
             for (int i = 0; i < itens.size(); i++) {
                 linha++;
@@ -317,18 +325,15 @@ public class ExcelEditor {
                 cell7.setCellStyle(bordaStyle);
                 Cell cell8 = row.createCell(7);
                 cell8.setCellStyle(bordaStyle);
-                Cell cell9 = row.createCell(8);
-                cell9.setCellStyle(bordaStyle);
 
                 cell1.setCellValue(itens.get(i).getId());
                 cell2.setCellValue(itens.get(i).getBMP());
                 cell3.setCellValue(itens.get(i).getSetor());
                 cell4.setCellValue(itens.get(i).getPredio());
                 cell5.setCellValue(itens.get(i).getSala());
-                cell6.setCellValue(itens.get(i).getEstado());
-                cell7.setCellValue(itens.get(i).getObservacao());
-                cell8.setCellValue(itens.get(i).getDescricao());
-                cell9.setCellValue(itens.get(i).getSerial());
+                cell6.setCellValue(itens.get(i).getDescricao());
+                cell7.setCellValue(itens.get(i).getSerial());
+                cell8.setCellValue(itens.get(i).getObservacao());
 
             }
 
@@ -342,6 +347,8 @@ public class ExcelEditor {
 
             return true;
         } catch (IOException e) {
+            Log.d("", "erro preencherExcelFullDB");
+
             e.printStackTrace();
             return false;
         }

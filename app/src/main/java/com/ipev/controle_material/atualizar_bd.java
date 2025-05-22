@@ -37,7 +37,7 @@ public class atualizar_bd extends AppCompatActivity {
 
         // Inicializar o Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("Banco_BMP");
+        databaseReference = database.getReference("Banco_Dados_IPEV").child("itens");
         // Carregar o arquivo Excel e inserir dados no Firebase
         new ReadExcelTask().execute();
     }
@@ -119,7 +119,7 @@ public class atualizar_bd extends AppCompatActivity {
                     databaseReference.child(String.valueOf(i)).child("setor").setValue(cellSETOR.getStringCellValue().trim());
                     databaseReference.child(String.valueOf(i)).child("predio").setValue(predio.trim());
                     databaseReference.child(String.valueOf(i)).child("sala").setValue(sala.trim());
-                    databaseReference.child(String.valueOf(i)).child("SN").setValue(serialNumber.trim());
+                    databaseReference.child(String.valueOf(i)).child("serial").setValue(serialNumber.trim());
                     databaseReference.child(String.valueOf(i)).child("observacao").setValue("");
 
                     // Adicione mais colunas conforme necessário

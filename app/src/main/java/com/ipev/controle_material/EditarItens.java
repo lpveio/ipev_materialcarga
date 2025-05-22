@@ -1,81 +1,67 @@
 
 package com.ipev.controle_material;
 
-        import android.app.AlertDialog;
-        import android.content.DialogInterface;
-        import android.content.Intent;
-        import android.graphics.Color;
-        import android.os.Bundle;
-        import android.text.InputFilter;
-        import android.text.TextUtils;
-        import android.util.Log;
-        import android.view.View;
-        import android.widget.AdapterView;
-        import android.widget.ArrayAdapter;
-        import android.widget.AutoCompleteTextView;
-        import android.widget.Button;
-        import android.widget.CheckBox;
-        import android.widget.ProgressBar;
-        import android.widget.Toast;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.ipev.controle_material.Model.ItensModel;
+import com.ipev.controle_material.Model.JsonCacheManager;
+import com.ipev.controle_material.Model.SincronizadorDeDados;
+import com.ipev.controle_material.Model.VersaoManager;
+import com.ipev.controle_material.databinding.ActivityEditarItensBinding;
 
-        import androidx.annotation.NonNull;
-        import androidx.appcompat.app.AppCompatActivity;
-        import androidx.cardview.widget.CardView;
-
-        import com.google.android.gms.tasks.OnFailureListener;
-        import com.google.android.gms.tasks.OnSuccessListener;
-        import com.google.android.material.textfield.TextInputEditText;
-        import com.google.firebase.database.DataSnapshot;
-        import com.google.firebase.database.DatabaseError;
-        import com.google.firebase.database.DatabaseReference;
-        import com.google.firebase.database.FirebaseDatabase;
-        import com.google.firebase.database.Query;
-        import com.google.firebase.database.ValueEventListener;
-        import com.ipev.controle_material.Model.ItensModel;
-
-        import java.util.ArrayList;
-        import java.util.HashMap;
-        import java.util.Map;
-        import java.util.Objects;
-        import java.util.concurrent.CountDownLatch;
-
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class EditarItens extends AppCompatActivity {
 
     Button salvar;
-
+    Long versao;
     CardView cardView;
 
     public ArrayList<ItensModel> itensModelArrayList;
-
     ProgressBar loading;
-
     AutoCompleteTextView auto_setor;
     AutoCompleteTextView auto_predio;
     AutoCompleteTextView auto_estado;
-
     TextInputEditText txt_sala , txt_bmp , txt_obs, txt_desc, txt_num_serie;
-
     ArrayAdapter<String> adapter_predio;
-
     ArrayAdapter<String> adapter_setor;
-
+    ArrayList<String> salas_local, predio_local;
     DatabaseReference database;
-
     ArrayAdapter<String> adapter_estado;
-
     String nome_predio, nome_setor, nome_estado;
-
-    int Id_child;
-
-    int tipo;
-
-    int BMP;
-
+    int Id_child, tipo, BMP;
     AutoCompleteTextView autoSala;
-
-    CheckBox sem_sala_check;
-
+    private ActivityEditarItensBinding binding;
     String str_setor, str_predio, str_sala, str_obs, str_desc, str_bmp, str_estado, str_num_serie;
 
 
@@ -83,177 +69,149 @@ public class EditarItens extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_editar_itens);
-
+        binding = ActivityEditarItensBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         getDadosIntent();
+        preencherCampos();
+        setupDropdowns();
+        //checkVersaoFirebase();
 
+        binding.btnSalvarItem.setOnClickListener(v -> salvarItem());
 
-        String[] salasuggestions = {"001", "BANHEIRO FEMININO", "BOX 01", "BOX 02", "BOX 03", "BOX 04", "BOX 05", "COPA", "CORREDOR", "CORREDOR E ÁREA EXTERNA", "CORREDOR SUPERIOR", "FUNDOS", "HALL ENTRADA", "LAME", "LAPM-SC", "LAPR", "LATERAL (ÁREA ESTUFA SEGREGADA)", "SALA 01", "SALA 02", "SALA 03", "SALA 04", "SALA 05", "SALA 06", "SALA 07", "SALA 07 (COPA)", "SALA 09", "SALA 1", "SALA 10", "SALA 101", "SALA 102", "SALA 103", "SALA 103 (ALMOXARIFADO)", "SALA 104", "SALA 106", "SALA 108", "SALA 109", "SALA 11", "SALA 110", "SALA 111", "SALA 112", "SALA 113", "SALA 114", "SALA 115", "SALA 116", "SALA 117", "SALA 118","SALA 119", "SALA 12", "SALA 12 (APM)", "SALA 120", "SALA 120 (COPA)", "SALA 121", "SALA 123", "SALA 13", "SALA 14", "SALA 15", "SALA 16", "SALA 17", "SALA 19", "SALA 2", "SALA 20", "SALA 3", "SALA 4", "SALA 5 - ALMOXARIFADO", "SALA 7", "SALA 8", "SALA 8 - COPA", "SALA 9", "SALA DE ESTOCAGEM - PISO SUPERIOR", "SALA DO SERVIDOR", "SEM SALA", "WC FEMININO, WC MASCULINO", "ÁREA EXTERNA", "ÁREA EXTERNA (AO LADO DO PRÉDIO DA AIE)", "ÁREA EXTERNA (EM FRENTE SALA ESTUFAS)"};
+    }
 
+    private void showDialogCamposVazios() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
+        builder.setTitle("Aviso");
+        if (TextUtils.isEmpty(str_bmp)) {
+            builder.setMessage("Insira o número de BMP").setPositiveButton("OK", null);
+        } else if (TextUtils.isEmpty(str_sala)) {
+            builder.setMessage("Insira a SALA que está alocado").setPositiveButton("OK", null);
+        } else {
+            builder.setMessage("Insira a Descrição do Item").setPositiveButton("OK", null);
+        }
+        builder.create().show();
+    }
+
+    private void salvarItem() {
+        str_bmp = binding.textEditBmpEdit.getText().toString();
+        str_sala = binding.textEditSalaEdit.getText().toString();
+        str_desc = binding.textEditDescEdit.getText().toString();
+        str_obs = binding.textEditObsEdit.getText().toString();
+        str_predio = binding.autoCompletePredioEdit.getText().toString();
+        str_setor = binding.autoCompleteSetorEdit.getText().toString();
+        str_num_serie = binding.textEditSerial.getText().toString();
+
+        if (!TextUtils.isEmpty(str_sala) && !TextUtils.isEmpty(str_bmp) && !TextUtils.isEmpty(str_desc)) {
+            binding.progressEditar.setVisibility(View.VISIBLE);
+            binding.cardviewEdit.setAlpha(0.3f);
+            addCadastro();
+        } else {
+            showDialogCamposVazios();
+        }
+    }
+
+    private void deleteItem() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
+
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference("itens");
+
+        String idDoItem = "2";
+
+        databaseRef.child(idDoItem).removeValue()
+                .addOnSuccessListener(aVoid -> {
+                    // Sucesso ao deletar
+                    Toast.makeText(this, "Item deletado com sucesso", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    // Falha ao deletar
+                    Toast.makeText(this, "Erro ao deletar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+
+    }
+
+    private void setupDropdowns() {
         String[] setores = getResources().getStringArray(R.array.setores);
+        adapter_setor = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, setores);
+        binding.autoCompleteSetorEdit.setAdapter(adapter_setor);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, salasuggestions);
+        String[] predios = getResources().getStringArray(R.array.predios);
+        adapter_predio = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, predios);
+        binding.autoCompletePredioEdit.setAdapter(adapter_predio);
 
-        auto_setor = findViewById(R.id.auto_complete_setor_edit);
-        auto_predio = findViewById(R.id.auto_complete_predio_edit);
-        auto_estado = findViewById(R.id.auto_complete_estado_edit);
-        autoSala = findViewById(R.id.text_edit_sala_edit);
+        String[] salas = getResources().getStringArray(R.array.salas);
+        ArrayAdapter<String> adapterSala = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, salas);
+        binding.textEditSalaEdit.setAdapter(adapterSala);
+        binding.textEditSalaEdit.setThreshold(1);
+        binding.textEditSalaEdit.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
 
-        autoSala.setAdapter(adapter);
-        autoSala.setThreshold(1);
-        autoSala.setFilters(new InputFilter[] {
-                new InputFilter.AllCaps()
-        });
-        autoSala.setText(str_sala);
+        binding.autoCompleteSetorEdit.setOnItemClickListener((parent, view, position, id) -> str_setor = parent.getItemAtPosition(position).toString());
+        binding.autoCompletePredioEdit.setOnItemClickListener((parent, view, position, id) -> str_predio = parent.getItemAtPosition(position).toString());
 
-        txt_bmp = findViewById(R.id.text_edit_bmp_edit);
-        txt_num_serie = findViewById(R.id.text_edit_serial);
-        txt_bmp.setText(str_bmp);
-        txt_num_serie.setText(str_num_serie);
-        txt_desc = findViewById(R.id.text_edit_desc_edit);
-        txt_desc.setText(str_desc);
-        txt_desc.setEnabled(false);
-        txt_bmp.setEnabled(false);
-        txt_obs = findViewById(R.id.text_edit_obs_edit);
-        txt_obs.setText(str_obs);
-        sem_sala_check = findViewById(R.id.checkBox3);
-        auto_setor.setText(str_setor);
-        loading = findViewById(R.id.progress_editar);
-        cardView = findViewById(R.id.cardview_edit);
+    }
 
-        adapter_setor = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, setores);
+    private void preencherCampos() {
+        binding.textEditSalaEdit.setText(str_sala);
+        binding.textEditBmpEdit.setText(str_bmp);
+        binding.textEditSerial.setText(str_num_serie);
+        binding.textEditDescEdit.setText(str_desc);
+        binding.textEditObsEdit.setText(str_obs);
+        binding.autoCompleteSetorEdit.setText(str_setor);
+        binding.autoCompletePredioEdit.setText(str_predio);
+        binding.textEditDescEdit.setEnabled(false);
+        binding.textEditBmpEdit.setEnabled(false);
+    }
 
-        auto_setor.setAdapter(adapter_setor);
+    public static void  removeDuplicates(ArrayList<String> lista) {
+        // Cria um HashSet para armazenar itens únicos
+        HashSet<String> conjunto = new HashSet<>();
 
+        // Itera sobre a lista original
+        for (int i = 0; i < lista.size(); i++) {
+            // Se o conjunto não contiver o elemento, adiciona ao conjunto e mantém na lista
+            if (!conjunto.contains(lista.get(i))) {
+                conjunto.add(lista.get(i));
 
-        auto_setor.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
-
-                String item = adapterView.getItemAtPosition(i).toString();
-
-                nome_setor = item;
-
+            } else { // Se o conjunto já contém o elemento, remove da lista
+                lista.remove(i);
+                i--; // Ajusta o índice após a remoção do elemento
             }
-        });
+        }
+    }
 
-        String[] predios= {"E0031", "E0033","E0037", "E0037 B","E0042","E0043","E0044","E0045","E0046","E0050","E0051","E0053","E0076","E0077",};
+    private void carregarDadosDoArquivoLocal() {
 
-        auto_predio.setText(str_predio);
-        adapter_predio = new ArrayAdapter<String>(this, R.layout.list_item, predios);
+        salas_local = new ArrayList<>();
+        predio_local = new ArrayList<>();
 
-        auto_predio.setAdapter(adapter_predio);
-        sem_sala_check.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (sem_sala_check.isChecked()) {
-                    autoSala.setText("SEM SALA");
-                } else {
-                    autoSala.setText("");
-                }
+        try {
+            JSONArray array = JsonCacheManager.obterDados(this);
+            if (array.length() == 0) {
+                Toast.makeText(this, "Sem dados offline disponíveis", Toast.LENGTH_LONG).show();
+                loading.setVisibility(View.INVISIBLE);
+                return;
             }
-        });
 
+            salas_local.clear();
+            predio_local.clear();
 
-        auto_predio.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
-
-                String item = adapterView.getItemAtPosition(i).toString();
-
-                nome_predio = item;
-
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+               salas_local.add(obj.getString("sala"));
+               predio_local.add(obj.getString("predio"));
             }
-        });
 
-        String[] estado= {"Em utilização", "Separado para Descarga","Emprestado", "Tranferido", "Sem nº de BMP"};
-        auto_estado.setText(str_estado);
-        adapter_estado = new ArrayAdapter<String>(this, R.layout.list_item, estado);
+            removeDuplicates(salas_local);
+            Collections.sort(salas_local);
+            removeDuplicates(predio_local);
+            Collections.sort(predio_local);
 
-        auto_estado.setAdapter(adapter_estado);
+            Toast.makeText(this, "Salas Carregados Localmente - Versao : ", Toast.LENGTH_SHORT).show();
 
-
-        auto_estado.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
-
-                String item = adapterView.getItemAtPosition(i).toString();
-
-                nome_estado = item;
-
-            }
-        });
-
-
-
-        salvar = findViewById(R.id.btn_salvar_item);
-
-        salvar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-
-                str_bmp = txt_bmp.getText().toString();
-                str_sala = autoSala.getText().toString();
-                str_desc = txt_desc.getText().toString();
-                str_obs = txt_obs.getText().toString();
-                str_estado = auto_estado.getText().toString();
-                str_predio = auto_predio.getText().toString();
-                str_setor = auto_setor.getText().toString();
-                str_num_serie = txt_num_serie.getText().toString();
-
-                if (!TextUtils.isEmpty(str_sala) && !TextUtils.isEmpty(str_bmp) && !TextUtils.isEmpty(str_desc)){
-                    loading.setVisibility(View.VISIBLE);
-                    cardView.setAlpha(0.3f);
-                    addCadastro();
-                } else {
-
-                    if (TextUtils.isEmpty(str_bmp)){
-                        AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
-                        builder.setTitle("Aviso");
-                        builder.setMessage("Insira o número de BMP");
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-                    } else if (TextUtils.isEmpty(str_sala)){
-                        AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
-                        builder.setTitle("Aviso");
-                        builder.setMessage("Insira a SALA que está alocado, ou caso o item não esteje em nenhuma sala clique em SEM SALA");
-                        builder.setPositiveButton("SEM SALA", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                txt_sala.setText("SEM SALA");
-                            }
-                        });
-
-                        builder.setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel(); // Fecha o AlertDialog
-                            }
-                        });
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-
-                    } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
-                        builder.setTitle("Aviso");
-                        builder.setMessage("Insira a Descrição do Item");
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
-                    }
-
-                }
-
-
-
-            }
-        });
-
-
-
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Erro ao carregar dados locais", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void addCadastro(){
@@ -264,41 +222,69 @@ public class EditarItens extends AppCompatActivity {
         map.put("setor", str_setor);
         map.put("predio", str_predio);
         map.put("sala", str_sala);
-        map.put("estado", str_estado);
         map.put("descricao", str_desc);
         map.put("observacao", str_obs);
         map.put("serial", str_num_serie);
 
-        FirebaseDatabase.getInstance().getReference().child("Banco_BMP")
+        FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens")
                 .child(String.valueOf(Id_child))
                 .updateChildren(map)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                loading.setVisibility(View.INVISIBLE);
-                                Toast.makeText(getBaseContext(), "ITEM EDITADO COM SUCESSO", Toast.LENGTH_SHORT).show();
-                                finish();
-                            }
-                        })
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        binding.progressEditar.setVisibility(View.INVISIBLE);
+                        Toast.makeText(getBaseContext(), "ITEM EDITADO COM SUCESSO", Toast.LENGTH_SHORT).show();
+                        atualizaVersaoFirebase();
+                        finish();
+
+                    }
+                })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(EditarItens.this);
-                        builder.setTitle("Aviso");
+                        builder.setTitle("Erro");
                         builder.setMessage("Erro ao editar o item");
-                        AlertDialog alertDialog = builder.create();
-                        alertDialog.show();
+                        builder.setPositiveButton("OK", null);
+                        builder.show();
                     }
                 });
 
     }
 
+    private void checkVersaoFirebase(){
+
+        DatabaseReference versaoRef = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("timestamp");
+
+        versaoRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+
+                    versao = snapshot.getValue(Long.class);
+                }  else {
+                    Toast.makeText(EditarItens.this, "Banco de Dados OFFLINE", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(EditarItens.this, "Erro ao buscar versão: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void atualizaVersaoFirebase() {
+
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("timestamp");
+        database.setValue(VersaoManager.gerarVersaoTimestamp());
+    }
 
     private void buscarDadosCadastrados(){
 
         itensModelArrayList = new ArrayList<>();
 
-        database = FirebaseDatabase.getInstance().getReference("Banco_BMP");
+        database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens");
 
         database.addValueEventListener(new ValueEventListener() {
             @Override

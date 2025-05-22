@@ -6,6 +6,7 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -26,13 +27,17 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 
 import com.dcastalia.localappupdate.DownloadApk;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.ipev.controle_material.Model.ExcelEditor;
 import com.ipev.controle_material.Model.ItensModel;
+import com.ipev.controle_material.Model.SetupView;
 
 import java.util.ArrayList;
 
@@ -46,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseReference mDatabase;
 
-    String usuario;
+    String usuario, setor, status;
 
     String versionApp , versionALastApp, UrlApk;
 
-    TextView versao_text;
+    TextView versao_text, username, textLogout;
 
 
     @Override
@@ -65,10 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main2);
 
-        Intent intent = getIntent();
-        usuario = intent.getStringExtra("USERNAME");
-
         cadastrar = findViewById(R.id.card_cadastrar);
+
+        textLogout = findViewById(R.id.text_logout);
 
         busca_local = findViewById(R.id.card_pesquisa_local);
 
@@ -78,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
         versao_text = findViewById(R.id.appVersion);
 
+        username = findViewById(R.id.user);
+
         inventario = findViewById(R.id.card_inventario);
 
         exportar_local = findViewById(R.id.card_exportar_local);
@@ -85,9 +91,16 @@ public class MainActivity extends AppCompatActivity {
         exportar_dados = findViewById(R.id.card_exportar_banco);
 
 
-
         checkVersionApp();
         checkVersionFirebase();
+        usuario = SetupView.getNome(this);
+       // buscarUser();
+
+        textLogout.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(MainActivity.this, MainActivity_login.class));
+            finish(); // Finaliza a tela atual
+        });
 
 
         exportar_dados.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (usuario.equals("admin")) {
+                if (status.equals("admin")) {
                     Intent intent = new Intent(MainActivity.this, Cadastrar.class);
                     startActivity(intent);
                 } else {
@@ -139,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(MainActivity.this, Exportar_Local.class);
+                Intent intent = new Intent(MainActivity.this, ExportLocal.class);
                 intent.putExtra("USERNAME", usuario);
                 startActivity(intent);
 
@@ -150,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         inventario.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
 
                 ///Instrucao para atualizar o banco de dados: colocar TRUE
                 boolean atualizar_bd = false;
@@ -173,49 +187,82 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    private void buscarUser() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser usuarioAtual = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (usuarioAtual != null) {
+            String uid = usuarioAtual.getUid();
+
+            db.collection("usuarios").document(uid).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            usuario = documentSnapshot.getString("nome");
+                             setor = documentSnapshot.getString("setor");
+                             status = documentSnapshot.getString("status");
+
+                            // Atualiza a TextView
+
+                            username.setText("Olá " + usuario);
+
+                            // Salva os dados no SharedPreferences
+                            SharedPreferences sharedPref = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putString("uid", uid);
+                            editor.putString("nome", usuario);
+                            editor.putString("setor", setor);
+                            editor.putString("status", status);
+                            editor.apply(); // ou commit()
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("MainActivity", "Erro ao buscar dados do usuário", e);
+                    });
+        }
+    }
+
     private void buscarDados(){
 
         itensModelArrayList = new ArrayList<>();
-        database = FirebaseDatabase.getInstance().getReference("Banco_BMP");
+        database = FirebaseDatabase.getInstance().getReference("Banco_Dados_IPEV").child("itens");
         database.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 itensModelArrayList.clear();
 
+                Log.d("", "total de itens do banco :" + snapshot.getChildrenCount());
+
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+
                     ItensModel itensModel = dataSnapshot.getValue(ItensModel.class);
+
                     itensModelArrayList.add(itensModel);
                 }
 
+                Log.d("", "total de itens dentro de itensModel:"  + itensModelArrayList.size());
 
+                ExcelEditor.preencherExcelFullAsync(MainActivity.this, itensModelArrayList);
 
             }
 
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                Log.e("FIREBASE", "Erro ao buscar dados: " + error.getMessage());
+                Toast.makeText(MainActivity.this, "Erro ao buscar dados do banco", Toast.LENGTH_SHORT).show();
             }
+
 
 
         });
 
-
-        ExcelEditor.preencherExcelFullAsync(this, itensModelArrayList);
     }
 
     private  void checkVersionApp(){
 
-        PackageManager packageManager = getPackageManager();
+        versionApp = SetupView.getVersionName(this);
+        versao_text.setText("v" + versionApp);
 
-        try {
-            PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(), 0);
-            versionApp = packageInfo.versionName;
-            versao_text.setText("v"+versionApp);
-
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     private void compareVersion(){
@@ -227,11 +274,8 @@ public class MainActivity extends AppCompatActivity {
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-
-                    DownloadApk downloadApk = new DownloadApk(MainActivity.this);
-
-                    downloadApk.startDownloadingApk(UrlApk);
-
+                    AppUpdater updater = new AppUpdater(MainActivity.this);
+                    updater.startDownload(UrlApk, "AppUpdate.apk");
                 }
             });
 
@@ -257,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
                 versionALastApp = dataSnapshot.child("versao").getValue(String.class);
                 UrlApk = dataSnapshot.child("link").getValue(String.class);
 
-                //compareVersion();
+                compareVersion();
             }
 
 
