@@ -41,17 +41,17 @@ import java.util.Map;
 
 public class AdapterItens_Inventario extends RecyclerView.Adapter<AdapterItens_Inventario.MyViewHolder> {
 
-    private Context context;
+    private final Context context;
 
     private ArrayList<ItensModel> list;
 
-    private String nome_inventario;
+    private final String nome_inventario;
 
     String status_usuario;
 
     FirebaseDatabase database;
 
-    DatabaseReference databaseReference;;
+    DatabaseReference databaseReference;
     ArrayList<String> itens_checados;
 
 

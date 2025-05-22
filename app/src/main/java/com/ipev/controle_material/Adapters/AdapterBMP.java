@@ -21,12 +21,13 @@ import java.util.ArrayList;
 
 public class AdapterBMP extends RecyclerView.Adapter<AdapterBMP.MyViewHolder> {
 
-    private Context context;
+    private final Context context;
 
-    private ArrayList<siloms_itens> list;
+    private final ArrayList<siloms_itens> list;
 
 
-    private ArrayList<Integer> list_faltantes , bmp_cadastrados;
+    private final ArrayList<Integer> list_faltantes;
+    private final ArrayList<Integer> bmp_cadastrados;
 
     int tipo;
 

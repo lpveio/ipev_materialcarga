@@ -1,8 +1,6 @@
 package com.ipev.controle_material;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -39,12 +37,10 @@ public class Buscar_BMP extends AppCompatActivity {
     private RecyclerView recyclerView;
     private DatabaseReference databaseReference;
     private ProgressBar loadingBar;
-    private SearchView searchView;
     private AdapterItens adapterItens;
     private ArrayList<ItensModel> itensList;
     private boolean isFiltered = false;
     private String lastFilterText = "";
-    private String status_usuario;
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
@@ -52,10 +48,10 @@ public class Buscar_BMP extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar_bmp);
 
-        status_usuario = SetupView.getSetor(this);
+        String status_usuario = SetupView.getSetor(this);
 
         recyclerView = findViewById(R.id.recycler_buscar_bmp);
-        searchView = findViewById(R.id.searchView);
+        SearchView searchView = findViewById(R.id.searchView);
         loadingBar = findViewById(R.id.progress_busca_bmp);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this::carregarItens);
@@ -132,8 +128,8 @@ public class Buscar_BMP extends AppCompatActivity {
                     Log.d("Versao Firebase BMP", versaoFirebase);
                     String versaoLocal = obterVersaoLocal();
 
-                    if (!String.valueOf(versaoFirebase).equals(versaoLocal)) {
-                        baixarDadosDoFirebase(String.valueOf(versaoFirebase));
+                    if (!versaoFirebase.equals(versaoLocal)) {
+                        baixarDadosDoFirebase(versaoFirebase);
                     } else {
                         carregarDadosDoArquivoLocal();
                     }

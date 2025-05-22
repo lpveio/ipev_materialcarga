@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.icu.text.LocaleDisplayNames;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -47,7 +46,6 @@ import org.apache.poi.ss.usermodel.Row;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class pendencias extends AppCompatActivity {
@@ -56,15 +54,11 @@ public class pendencias extends AppCompatActivity {
 
     AlertDialog dialog;
 
-    ArrayList<ItensModel> itensModelArrayList;
-
-    long quantidadeItens;
-
     ValueEventListener mListener;
 
     ArrayList<siloms_itens> siloms_itens_faltantes;
 
-    ArrayList<Integer> BMP_Exclusivos, BMP_Cadastrados;;
+    ArrayList<Integer> BMP_Exclusivos, BMP_Cadastrados;
 
     Uri file_uri;
 
@@ -100,9 +94,7 @@ public class pendencias extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
 
-                String item = adapterView.getItemAtPosition(i).toString();
-
-                nome_banco = item;
+                nome_banco = adapterView.getItemAtPosition(i).toString();
 
                 busca_siloms.setEnabled(true);
 
@@ -117,7 +109,7 @@ public class pendencias extends AppCompatActivity {
 
 
 
-        adapter = new ArrayAdapter<String>(this, R.layout.list_item, list);
+        adapter = new ArrayAdapter<>(this, R.layout.list_item, list);
 
         gerar_relatorio.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -173,9 +165,7 @@ public class pendencias extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
 
             siloms_list = new ArrayList<>();
-            siloms_list.clear();
             siloms_list_int = new ArrayList<>();
-            siloms_list_int.clear();
 
             try {
                 // Abrir o arquivo Excel a partir da pasta assets
@@ -280,7 +270,7 @@ public class pendencias extends AppCompatActivity {
 
                     intent.putIntegerArrayListExtra("BMP_Cadastrados", BMP_Cadastrados );
                     intent.putIntegerArrayListExtra("BMP", BMP_Exclusivos );
-                    intent.putExtra("siloms_lista", (Serializable) siloms_faltantes);
+                    intent.putExtra("siloms_lista", siloms_faltantes);
                     intent.putExtra("tipo", tipo);
                     intent.putExtra("nome", nome_banco);
                     startActivity(intent);

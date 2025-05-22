@@ -20,11 +20,11 @@ import java.util.ArrayList;
 
 public class AdapterItens extends RecyclerView.Adapter<AdapterItens.MyViewHolder> {
 
-    private Context context;
+    private final Context context;
 
     private ArrayList<ItensModel> list;
 
-    private String status_usuario;
+    private final String status_usuario;
 
 
 

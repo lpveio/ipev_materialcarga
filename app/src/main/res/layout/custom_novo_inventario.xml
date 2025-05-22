@@ -30,6 +30,7 @@
                 android:id="@+id/nome_inventario_edt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints=""
                 android:hint="  Nome do Inventário">
 
             </EditText>
@@ -56,7 +57,7 @@
                 android:id="@+id/nome_criador_edt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint=" Nome do criador do inventário">
+                android:autofillHints="" android:hint=" Nome do criador do inventário">
             </EditText>
 
         </LinearLayout>

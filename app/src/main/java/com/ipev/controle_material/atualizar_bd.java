@@ -42,7 +42,7 @@ public class atualizar_bd extends AppCompatActivity {
         new ReadExcelTask().execute();
     }
 
-    class ReadExcelTask extends AsyncTask<Void, Void, Void> {
+    class  ReadExcelTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -102,11 +102,11 @@ public class atualizar_bd extends AppCompatActivity {
                         }
 
                         if (serialNumber.equals("0")){
-                            serialNumber = "SEM S/N";;
+                            serialNumber = "SEM S/N";
                         }
 
                     } catch (StringIndexOutOfBoundsException e){
-                        serialNumber = "SEM S/N";;
+                        serialNumber = "SEM S/N";
                     }
 
 

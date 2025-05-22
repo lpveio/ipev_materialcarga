@@ -25,11 +25,9 @@ public class AdapterListaInventarios extends RecyclerView.Adapter<AdapterListaIn
 
     private ArrayList<InventarioModel> list;
 
-    private Context context;
-
     private int selectedItem = RecyclerView.NO_POSITION;
 
-    private SelectInventario listener;
+    private final SelectInventario listener;
 
 
 

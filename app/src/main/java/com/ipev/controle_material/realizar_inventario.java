@@ -202,7 +202,7 @@ public class realizar_inventario extends AppCompatActivity {
         }
 
         if (ListFilterBmp.isEmpty()){
-            Toast.makeText(this, "Nenhum BMP encontrado", Toast.LENGTH_LONG);
+            Toast.makeText(this, "Nenhum BMP encontrado", Toast.LENGTH_LONG).show();
             recyclerView.setVisibility(View.GONE);
         } else {
             adapterItens.setFilterBMP(ListFilterBmp);
