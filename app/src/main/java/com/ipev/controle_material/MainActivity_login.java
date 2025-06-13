@@ -30,9 +30,6 @@ public class MainActivity_login extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private TextView appVersionLogin;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +74,50 @@ public class MainActivity_login extends AppCompatActivity {
 
             }
         });
+
+        TextView forgotPassword = findViewById(R.id.forgot_password);
+        forgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Cria o Dialog com layout personalizado
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_reset_password, null);
+                EditText emailInput = dialogView.findViewById(R.id.email_reset_input);
+                Button resetButton = dialogView.findViewById(R.id.reset_button);
+
+                androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(MainActivity_login.this)
+                        .setView(dialogView)
+                        .setTitle("Redefinir Senha")
+                        .create();
+
+                resetButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String email = emailInput.getText().toString().trim();
+                        if (TextUtils.isEmpty(email)) {
+                            emailInput.setError("Digite seu e-mail");
+                            return;
+                        }
+
+                        mAuth.sendPasswordResetEmail(email)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(MainActivity_login.this,
+                                                "Se o Email estiver cadastrado, você receberá um link de redefinição em " + email,
+                                                Toast.LENGTH_LONG).show();
+                                        dialog.dismiss();
+                                    } else {
+                                        Toast.makeText(MainActivity_login.this,
+                                                "Erro: " + task.getException().getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                    }
+                });
+
+                dialog.show();
+            }
+        });
+
     }
 
     private void loginUsuario() {
